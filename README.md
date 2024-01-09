@@ -1,4 +1,4 @@
-LLL d yyyy# KPOP Idol Table using TanStack, React, Express, and MongoDB
+# KPOP Idol Table using TanStack, React, Express, and MongoDB
 
 This project serves as a practice in creating CRUD operations using TanStack's table and query libraries. The backend is built with Express.js and MongoDB, providing a foundation for managing KPOP idols' information.
 

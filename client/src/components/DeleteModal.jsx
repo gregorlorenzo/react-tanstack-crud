@@ -1,28 +1,42 @@
 // DeleteModal.js
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 const DeleteModal = ({ isOpen, onClose, id }) => {
     if (!isOpen || !id) return null;
 
     const queryClient = useQueryClient();
 
+    const { mutate: deleteIdolMutation } = useMutation({
+        mutationFn: async (id) => {
+            const response = await fetch(`http://localhost:8000/api/v1/idols/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                // Handle success
+                console.log('Item deleted successfully');
+    
+                queryClient.invalidateQueries(["idols"]);
+    
+                onClose();
+            } else {
+                // Handle error
+                console.error('Error deleting item');
+            }
+        },
+        onSuccess: () => {
+            console.log('Idol deleted successfully');
+            queryClient.invalidateQueries(["idols"]);
+            onClose();
+        },
+        onError: (error) => {
+            console.error('Error deleting item', error);
+        }
+    })
+
     const handleConfirmDelete = async () => {
         // Send delete request to the API
-        const response = await fetch(`http://localhost:8000/api/v1/idols/${id}`, {
-            method: 'DELETE',
-        });
-
-        if (response.ok) {
-            // Handle success
-            console.log('Item deleted successfully');
-
-            queryClient.invalidateQueries(["idols"]);
-
-            onClose();
-        } else {
-            // Handle error
-            console.error('Error deleting item');
-        }
+        deleteIdolMutation(id);
     };
 
     return (
@@ -70,7 +84,7 @@ const DeleteModal = ({ isOpen, onClose, id }) => {
 
                     <div className="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b">
                         <button onClick={handleConfirmDelete}  type="button" className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Delete</button>
-                        <button type="button" className="ms-3 text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">Cancel</button>
+                        <button onClick={onClose} type="button" className="ms-3 text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">Cancel</button>
                     </div>
                 </div>
             </div>

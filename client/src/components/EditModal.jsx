@@ -1,4 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 const EditModal = ({ isOpen, onClose, rowData, columns }) => {
     if (!isOpen || !rowData) return null;
@@ -17,6 +17,34 @@ const EditModal = ({ isOpen, onClose, rowData, columns }) => {
 
     const queryClient = useQueryClient();
 
+    const { mutate: editIdolMutation } = useMutation({
+        mutationFn: async (formData) => {
+            const response = await fetch(`http://localhost:8000/api/v1/idols/${rowData._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'An error occurred');
+            }
+
+            return data;
+        },
+        onSuccess: () => {
+            console.log('Idol updated successfully');
+            queryClient.invalidateQueries(['idols']);
+            onClose();
+        },
+        onError: (error) => {
+            console.error(error);
+        }
+    })
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -30,26 +58,7 @@ const EditModal = ({ isOpen, onClose, rowData, columns }) => {
             formData.birthday = birthday.toISOString();
         }
 
-        const response = await fetch(`http://localhost:8000/api/v1/idols/${rowData._id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            console.log(data);
-
-            // Invalidate the cache to refetch the data
-            queryClient.invalidateQueries(["idols"]);
-
-            onClose();
-        } else {
-            console.error(data);
-        }
+        editIdolMutation(formData);
     };
 
 

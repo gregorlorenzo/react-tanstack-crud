@@ -1,38 +1,9 @@
-import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useState } from 'react';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 
-const CreateModal = ({ isOpen, onClose, columns }) => {
+const CreateModal = ({ isOpen, onClose, columns, addIdolMutation }) => {
+  const [error, setError] = useState(null);
   const updatedColumns = columns.slice(0, -1);
-  if (!isOpen) return null;
-
-  const queryClient = useQueryClient();
-
-  const { mutate: addIdolMutation } = useMutation({
-    mutationFn : async (formData) => {
-      const response = await fetch("http://localhost:8000/api/v1/idols", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message);
-      }
-
-      return data;
-    },
-    onSuccess: () => {
-      console.log("Idol added successfully");
-      queryClient.invalidateQueries(["idols"]);
-      onClose();
-    },
-    onError: (error) => {
-      console.error(error);
-    }
-  })
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,23 +18,22 @@ const CreateModal = ({ isOpen, onClose, columns }) => {
       formData.birthday = birthday.toISOString();
     }
 
-    addIdolMutation(formData);
+    try {
+      await addIdolMutation.mutateAsync(formData);
+      console.log('Idol added successfully');
+      onClose();
+    } catch (error) {
+      console.error('Error adding idol:', error.message);
+      setError(error.message || 'An error occurred');
+    }
   };
 
-
   return (
-    <div
-      aria-hidden="true"
-      className="fixed top-0 right-0 bottom-0 left-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-    >
+    <div className={`fixed top-0 right-0 bottom-0 left-0 z-50 flex items-center justify-center bg-black bg-opacity-50 ${isOpen ? '' : 'hidden'}`}>
       <div className="relative p-4 w-full max-w-md max-h-full">
-
         <div className="relative bg-white rounded-lg shadow">
-
           <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Add New Idol
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">Add New Idol</h3>
             <button
               onClick={onClose}
               type="button"
@@ -87,7 +57,6 @@ const CreateModal = ({ isOpen, onClose, columns }) => {
               <span className="sr-only">Close modal</span>
             </button>
           </div>
-
           <form className="p-4 md:p-5" onSubmit={handleSubmit}>
             {updatedColumns.map((column) => (
               <div key={column.accessorKey} className="grid gap-4 mb-4 grid-cols-2">
@@ -96,7 +65,7 @@ const CreateModal = ({ isOpen, onClose, columns }) => {
                     {column.header}
                   </label>
                   <input
-                    type={column.type || 'text'}  // Default to text if type is not provided
+                    type={column.type || 'text'}
                     name={column.accessorKey}
                     id={column.accessorKey}
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
@@ -110,13 +79,51 @@ const CreateModal = ({ isOpen, onClose, columns }) => {
               type="submit"
               className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
             >
-              Add new product
+              Add new idol
             </button>
           </form>
+          {error && <div className="text-red-500">{error}</div>}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CreateModal
+const CreateModalContainer = ({ isOpen, onClose, columns }) => {
+  const queryClient = useQueryClient();
+
+  const addIdolMutation = useMutation({
+    mutationFn: async (formData) => {
+      const response = await fetch('http://localhost:8000/api/v1/idols', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      console.log('Idol added successfully');
+      queryClient.invalidateQueries({
+        queryKey: ['idols'],
+      });
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+  });
+
+  return (
+    <CreateModal isOpen={isOpen} onClose={onClose} addIdolMutation={addIdolMutation} columns={columns} />
+  );
+};
+
+export default CreateModalContainer;

@@ -7,7 +7,7 @@ This project serves as a practice in creating CRUD operations using TanStack's t
 1. Ensure you have Node.js and MongoDB installed on your system.
 2. Clone this repository:
 ```
-git clone [repository_url]
+git clone https://github.com/gregorlorenzo/react-tanstack-crud.git
 ```
 3. Navigate to the project directory:
 ```

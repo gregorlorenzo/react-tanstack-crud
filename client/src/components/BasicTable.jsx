@@ -37,58 +37,56 @@ const BasicTable = () => {
         setCurrentRowData(modalType === 'edit' ? rowData : null);
     };
 
-    const columns = useMemo(
-        () => [
-            {
-                header: "Birth Name",
-                accessorKey: "birthName",
-                type: "text"
-            },
-            {
-                header: "Stage Name",
-                accessorKey: "stageName",
-                type: "text"
-            },
-            {
-                header: "Position",
-                accessorKey: "position",
-                type: "text"
-            },
-            {
-                header: "Birth Day",
-                accessorKey: "birthday",
-                cell: (info) => format(new Date(info.getValue()), "LLL do, yyyy"),
-                type: "date"
-            },
-            {
-                header: "Height (CM)",
-                accessorKey: "height",
-                type: "number"
-            },
-            {
-                header: "Weight (KG)",
-                accessorKey: "weight",
-                type: "number"
-            },
-            {
-                header: () => <span>Action</span>,
-                accessorKey: "_id",
-                cell: (info) => (
-                    <div className="flex gap-2">
-                        <button className="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-xs px-2 py-1.5"
-                            onClick={() => handleOpen('edit', info.row.original)} >
-                            Edit
-                        </button>
-                        <button className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-xs px-2 py-1.5"
-                            onClick={() => handleOpen('delete', info.row.original._id)}>
-                            Delete
-                        </button>
-                    </div>
-                ),
-            }
-        ],
-        []
-    );
+    const columns = [
+        {
+            header: "Birth Name",
+            accessorKey: "birthName",
+            type: "text"
+        },
+        {
+            header: "Stage Name",
+            accessorKey: "stageName",
+            type: "text"
+        },
+        {
+            header: "Position",
+            accessorKey: "position",
+            type: "text"
+        },
+        {
+            header: "Birth Day",
+            accessorKey: "birthday",
+            cell: (info) => format(new Date(info.getValue()), "LLL do, yyyy"),
+            type: "date"
+        },
+        {
+            header: "Height (CM)",
+            accessorKey: "height",
+            type: "number"
+        },
+        {
+            header: "Weight (KG)",
+            accessorKey: "weight",
+            type: "number"
+        },
+        {
+            header: () => <span>Action</span>,
+            accessorKey: "_id",
+            cell: (info) => (
+                <div className="flex gap-2">
+                    <button className="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-xs px-2 py-1.5"
+                        onClick={() => handleOpen('edit', info.row.original)} >
+                        Edit
+                    </button>
+                    <button className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-xs px-2 py-1.5"
+                        onClick={() => handleOpen('delete', info.row.original._id)}>
+                        Delete
+                    </button>
+                </div>
+            ),
+            enableSorting: false
+        }
+    ]
 
     const { data: serverData } = useQuery({
         queryKey: ["idols"],
@@ -104,7 +102,7 @@ const BasicTable = () => {
         }
     });
 
-    const data = useMemo(() => serverData ?? [], [serverData]);
+    const data = serverData ?? [];
 
     const [sorting, setSorting] = useState([]);
     const [filtering, setFiltering] = useState('');

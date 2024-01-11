@@ -5,22 +5,31 @@ const CreateModal = ({ isOpen, onClose, columns, addIdolMutation }) => {
   const [error, setError] = useState(null);
   const updatedColumns = columns.slice(0, -1);
 
+  // State to track form data
+  const initialFormData = Object.fromEntries(updatedColumns.map(column => [column.accessorKey, '']));
+  const [formData, setFormData] = useState(initialFormData);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = {};
+    // Extract form data from the form
+    const newFormData = {};
     updatedColumns.forEach((column) => {
-      formData[column.accessorKey] = e.target.elements[column.accessorKey].value;
+      newFormData[column.accessorKey] = e.target.elements[column.accessorKey].value;
     });
 
-    if (formData.birthday) {
-      const birthday = new Date(formData.birthday);
-      formData.birthday = birthday.toISOString();
+    if (newFormData.birthday) {
+      const birthday = new Date(newFormData.birthday);
+      newFormData.birthday = birthday.toISOString();
     }
 
     try {
-      await addIdolMutation.mutateAsync(formData);
+      await addIdolMutation.mutateAsync(newFormData);
       console.log('Idol added successfully');
+
+      // Reset form data after successful submission
+      setFormData(initialFormData);
+
       onClose();
     } catch (error) {
       console.error('Error adding idol:', error.message);
@@ -71,6 +80,8 @@ const CreateModal = ({ isOpen, onClose, columns, addIdolMutation }) => {
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                     placeholder={`Enter ${column.header}`}
                     required=""
+                    value={formData[column.accessorKey]} // Set value from state
+                    onChange={(e) => setFormData({ ...formData, [column.accessorKey]: e.target.value })} // Update state on change
                   />
                 </div>
               </div>
